@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public interface UserAssetRepository extends JpaRepository<UserAsset, Long> {
 
+    List<UserAsset> findByAssetType(String assetType);
+
     // ALL assets (STOCK + CRYPTO)
     List<UserAsset> findAll();
     List<UserAsset> findBySymbol(String symbol);
