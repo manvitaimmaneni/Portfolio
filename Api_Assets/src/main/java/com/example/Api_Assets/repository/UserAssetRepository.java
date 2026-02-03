@@ -13,7 +13,7 @@ public interface UserAssetRepository extends JpaRepository<UserAsset, Long> {
 
     // ALL assets (STOCK + CRYPTO)
     List<UserAsset> findAll();
-
+    List<UserAsset> findBySymbol(String symbol);
     // STOCKS ONLY (all stocks user holds)
     @Query("SELECT u FROM UserAsset u WHERE u.assetType = 'STOCK'")
     List<UserAsset> findAllStocks();
