@@ -1,7 +1,7 @@
-package com.example.Api_Assets.service;
+package Api_Assets.service;
 
-import com.example.Api_Assets.dto.AssetRecommendation;
-import com.example.Api_Assets.entity.UserAsset;
+import Api_Assets.dto.AssetRecommendation;
+import Api_Assets.entity.UserAsset;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

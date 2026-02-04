@@ -1,4 +1,4 @@
-package com.example.Api_Assets.service;
+package Api_Assets.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

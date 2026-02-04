@@ -1,13 +1,13 @@
-package com.example.Api_Assets.controller;
+package Api_Assets.controller;
 
-import com.example.Api_Assets.dto.DashboardAsset;
-import com.example.Api_Assets.dto.RiskAssessment;
-import com.example.Api_Assets.dto.SellRequest;
-import com.example.Api_Assets.entity.UserAsset;
-import com.example.Api_Assets.repository.UserAssetRepository;
-import com.example.Api_Assets.service.AssetService;
-import com.example.Api_Assets.service.CryptoService;
-import com.example.Api_Assets.service.StockService;
+import Api_Assets.dto.DashboardAsset;
+import Api_Assets.dto.RiskAssessment;
+import Api_Assets.dto.SellRequest;
+import Api_Assets.entity.UserAsset;
+import Api_Assets.repository.UserAssetRepository;
+import Api_Assets.service.AssetService;
+import Api_Assets.service.CryptoService;
+import Api_Assets.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;

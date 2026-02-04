@@ -1,8 +1,8 @@
-package com.example.Api_Assets.service;
+package Api_Assets.service;
 
-import com.example.Api_Assets.dto.RiskAssessment;
-import com.example.Api_Assets.entity.UserAsset;
-import com.example.Api_Assets.repository.UserAssetRepository;
+import Api_Assets.dto.RiskAssessment;
+import Api_Assets.entity.UserAsset;
+import Api_Assets.repository.UserAssetRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

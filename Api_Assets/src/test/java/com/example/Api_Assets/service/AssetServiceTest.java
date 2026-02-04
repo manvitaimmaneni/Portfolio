@@ -1,8 +1,11 @@
 package com.example.Api_Assets.service;
 
-import com.example.Api_Assets.dto.RiskAssessment;
-import com.example.Api_Assets.entity.UserAsset;
-import com.example.Api_Assets.repository.UserAssetRepository;
+import Api_Assets.dto.RiskAssessment;
+import Api_Assets.entity.UserAsset;
+import Api_Assets.repository.UserAssetRepository;
+import Api_Assets.service.AssetService;
+import Api_Assets.service.CryptoService;
+import Api_Assets.service.StockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

@@ -1,5 +1,5 @@
 // java
-package com.example.Api_Assets.dto;
+package Api_Assets.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

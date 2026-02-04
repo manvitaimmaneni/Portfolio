@@ -1,4 +1,4 @@
-package com.example.Api_Assets.entity;
+package Api_Assets.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

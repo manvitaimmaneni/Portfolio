@@ -11,7 +11,7 @@
 //        this.message = message;
 //    }
 //}
-package com.example.Api_Assets.dto;
+package Api_Assets.dto;
 
 public class ChatRequest {
     private String message;

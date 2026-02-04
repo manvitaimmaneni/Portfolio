@@ -1,7 +1,7 @@
-package com.example.Api_Assets.repository;
+package Api_Assets.repository;
 
 
-import com.example.Api_Assets.entity.UserAsset;
+import Api_Assets.entity.UserAsset;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

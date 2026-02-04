@@ -1,8 +1,8 @@
-package com.example.Api_Assets.controller;
+package Api_Assets.controller;
 
-import com.example.Api_Assets.dto.ChatRequest;
-import com.example.Api_Assets.dto.ChatResponse;
-import com.example.Api_Assets.service.ChatService;
+import Api_Assets.dto.ChatRequest;
+import Api_Assets.dto.ChatResponse;
+import Api_Assets.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

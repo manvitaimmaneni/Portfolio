@@ -1,4 +1,4 @@
-package com.example.Api_Assets;
+package Api_Assets;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
