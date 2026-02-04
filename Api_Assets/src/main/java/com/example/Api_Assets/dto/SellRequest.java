@@ -8,4 +8,6 @@ import java.time.LocalDateTime;
 public class SellRequest {
     private BigDecimal sellingPrice;
     private LocalDateTime sellingDate;
+    private String symbol;
+    private Integer quantityToSell;
 }
