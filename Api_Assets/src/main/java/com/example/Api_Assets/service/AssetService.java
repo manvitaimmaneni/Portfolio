@@ -1,10 +1,8 @@
-// java
 package com.example.Api_Assets.service;
 
 import com.example.Api_Assets.dto.RiskAssessment;
 import com.example.Api_Assets.entity.UserAsset;
 import com.example.Api_Assets.repository.UserAssetRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,14 +17,17 @@ public class AssetService {
     private static final int DIVIDE_SCALE = 8;
     private static final int PERCENT_SCALE = 2;
 
-    @Autowired
-    private UserAssetRepository userAssetRepository;
+    private final UserAssetRepository userAssetRepository;
+    private final StockService stockService;
+    private final CryptoService cryptoService;
 
-    @Autowired
-    private StockService stockService;
-
-    @Autowired
-    private CryptoService cryptoService;
+    public AssetService(UserAssetRepository userAssetRepository,
+                        StockService stockService,
+                        CryptoService cryptoService) {
+        this.userAssetRepository = userAssetRepository;
+        this.stockService = stockService;
+        this.cryptoService = cryptoService;
+    }
 
     public RiskAssessment checkSellRisk(String symbol, int quantityToSell) {
         List<UserAsset> assets = userAssetRepository.findBySymbol(symbol);
@@ -45,7 +46,10 @@ public class AssetService {
             );
         }
 
-        int totalQty = assets.stream().mapToInt(a -> a.getQty() == null ? 0 : a.getQty()).sum();
+        int totalQty = assets.stream()
+                .mapToInt(a -> a.getQty() == null ? 0 : a.getQty())
+                .sum();
+
         if (quantityToSell <= 0) {
             return new RiskAssessment(
                     "SELL",
@@ -74,19 +78,18 @@ public class AssetService {
             );
         }
 
-        // Compute weighted average buy price
         BigDecimal weightedSum = BigDecimal.ZERO;
         for (UserAsset a : assets) {
             BigDecimal buy = a.getBuyPrice() == null ? BigDecimal.ZERO : a.getBuyPrice();
             int q = a.getQty() == null ? 0 : a.getQty();
             weightedSum = weightedSum.add(buy.multiply(BigDecimal.valueOf(q)));
         }
-        BigDecimal avgBuyPrice = totalQty == 0 ? BigDecimal.ZERO
+
+        BigDecimal avgBuyPrice = totalQty == 0
+                ? BigDecimal.ZERO
                 : weightedSum.divide(BigDecimal.valueOf(totalQty), DIVIDE_SCALE, RoundingMode.HALF_UP);
 
-        // Determine asset type from first record (assumes same symbol -> same type)
         String assetType = assets.get(0).getAssetType();
-
         BigDecimal currentPrice = getCurrentPrice(symbol, assetType);
 
         BigDecimal percent;
@@ -103,20 +106,16 @@ public class AssetService {
                 .multiply(BigDecimal.valueOf(quantityToSell))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // For selling: negative percent (loss) increases risk
         BigDecimal absPercent = percent.abs();
         String riskLevel;
         if (percent.compareTo(BigDecimal.ZERO) >= 0) {
-            // In profit -> low risk to sell
             riskLevel = "LOW";
+        } else if (absPercent.compareTo(HIGH_RISK_THRESHOLD) >= 0) {
+            riskLevel = "HIGH";
+        } else if (absPercent.compareTo(MEDIUM_RISK_THRESHOLD) >= 0) {
+            riskLevel = "MEDIUM";
         } else {
-            if (absPercent.compareTo(HIGH_RISK_THRESHOLD) >= 0) {
-                riskLevel = "HIGH";
-            } else if (absPercent.compareTo(MEDIUM_RISK_THRESHOLD) >= 0) {
-                riskLevel = "MEDIUM";
-            } else {
-                riskLevel = "LOW";
-            }
+            riskLevel = "LOW";
         }
 
         String recommendation = buildSellRecommendation(riskLevel, percent, monetaryImpact);
@@ -137,9 +136,13 @@ public class AssetService {
     public RiskAssessment checkBuyRisk(String symbol, int quantityToBuy) {
         List<UserAsset> assets = userAssetRepository.findBySymbol(symbol);
 
-        // If no previous buys, buying is typically low risk (no historical reference)
         if (assets.isEmpty()) {
-            BigDecimal currentPrice = getCurrentPrice(symbol, "STOCK"); // default; crypto detection not possible without record
+            // naive inference; adjust to your needs
+            String typeGuess = symbol.toUpperCase().matches(".*(BTC|ETH|SOL|ADA|XRP).*")
+                    ? "CRYPTO"
+                    : "STOCK";
+            BigDecimal currentPrice = getCurrentPrice(symbol, typeGuess);
+
             return new RiskAssessment(
                     "BUY",
                     "LOW",
@@ -153,15 +156,19 @@ public class AssetService {
             );
         }
 
-        // Compute weighted average buy price
-        int totalQty = assets.stream().mapToInt(a -> a.getQty() == null ? 0 : a.getQty()).sum();
+        int totalQty = assets.stream()
+                .mapToInt(a -> a.getQty() == null ? 0 : a.getQty())
+                .sum();
+
         BigDecimal weightedSum = BigDecimal.ZERO;
         for (UserAsset a : assets) {
             BigDecimal buy = a.getBuyPrice() == null ? BigDecimal.ZERO : a.getBuyPrice();
             int q = a.getQty() == null ? 0 : a.getQty();
             weightedSum = weightedSum.add(buy.multiply(BigDecimal.valueOf(q)));
         }
-        BigDecimal avgBuyPrice = totalQty == 0 ? BigDecimal.ZERO
+
+        BigDecimal avgBuyPrice = totalQty == 0
+                ? BigDecimal.ZERO
                 : weightedSum.divide(BigDecimal.valueOf(totalQty), DIVIDE_SCALE, RoundingMode.HALF_UP);
 
         String assetType = assets.get(0).getAssetType();
@@ -181,18 +188,15 @@ public class AssetService {
                 .multiply(BigDecimal.valueOf(quantityToBuy))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // For buying: positive percent (current > avg) increases risk (you'd be buying above avg)
         String riskLevel;
         if (percent.compareTo(BigDecimal.ZERO) <= 0) {
             riskLevel = "LOW";
+        } else if (percent.compareTo(HIGH_RISK_THRESHOLD) >= 0) {
+            riskLevel = "HIGH";
+        } else if (percent.compareTo(MEDIUM_RISK_THRESHOLD) >= 0) {
+            riskLevel = "MEDIUM";
         } else {
-            if (percent.compareTo(HIGH_RISK_THRESHOLD) >= 0) {
-                riskLevel = "HIGH";
-            } else if (percent.compareTo(MEDIUM_RISK_THRESHOLD) >= 0) {
-                riskLevel = "MEDIUM";
-            } else {
-                riskLevel = "LOW";
-            }
+            riskLevel = "LOW";
         }
 
         String recommendation = buildBuyRecommendation(riskLevel, percent, monetaryImpact);
@@ -211,15 +215,10 @@ public class AssetService {
     }
 
     private BigDecimal getCurrentPrice(String symbol, String assetType) {
-        try {
-            if (assetType != null && assetType.equalsIgnoreCase("CRYPTO")) {
-                return cryptoService.getCryptoPrice(symbol.toLowerCase());
-            } else {
-                return stockService.getCurrentPrice(symbol);
-            }
-        } catch (Exception e) {
-            // fallback
-            return BigDecimal.ZERO;
+        if (assetType != null && assetType.equalsIgnoreCase("CRYPTO")) {
+            return cryptoService.getCryptoPrice(symbol.toLowerCase());
+        } else {
+            return stockService.getCurrentPrice(symbol);
         }
     }
 
@@ -241,15 +240,12 @@ public class AssetService {
     }
 
     private String buildBuyRecommendation(String riskLevel, BigDecimal percent, BigDecimal monetaryImpact) {
-        switch (riskLevel) {
-            case "HIGH":
-                return "High risk to buy: current price significantly above previous average. Consider waiting or buying partial.";
-            case "MEDIUM":
-                return "Medium risk to buy: price moderately above average. Consider dollar-cost averaging.";
-            case "LOW":
-                return "Low risk to buy: price at or below average.";
-            default:
-                return "";
-        }
+        return switch (riskLevel) {
+            case "HIGH" ->
+                    "High risk to buy: current price significantly above previous average. Consider waiting or buying partial.";
+            case "MEDIUM" -> "Medium risk to buy: price moderately above average. Consider dollar-cost averaging.";
+            case "LOW" -> "Low risk to buy: price at or below average.";
+            default -> "";
+        };
     }
 }

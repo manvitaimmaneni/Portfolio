@@ -2,10 +2,10 @@ package com.example.Api_Assets.service;
 
 import com.example.Api_Assets.dto.AssetRecommendation;
 import com.example.Api_Assets.entity.UserAsset;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,11 +14,14 @@ import java.util.stream.Collectors;
 @Service
 public class ChatService {
 
-    @Autowired
-    private RecommendationService recommendationService;
+    private final RecommendationService recommendationService;
+    private final GeminiService geminiService;
 
-    @Autowired
-    private GeminiService geminiService;
+    public ChatService(RecommendationService recommendationService,
+                       GeminiService geminiService) {
+        this.recommendationService = recommendationService;
+        this.geminiService = geminiService;
+    }
 
     public String processMessage(String message) {
         if (message == null || message.isBlank()) {
@@ -28,7 +31,6 @@ public class ChatService {
         String msg = message.toLowerCase();
         int n = extractNumber(msg, 3);
 
-        // --- "top N stocks" with DIVERSIFICATION ANALYSIS ---
         if (msg.contains("top") && msg.contains("stock")) {
             List<UserAsset> allStocks = recommendationService.getAllStocks();
             String diversification = analyzeStockDiversification(allStocks);
@@ -45,7 +47,6 @@ public class ChatService {
                     : fallbackResponse("STOCKS", topStocks, diversification);
         }
 
-        // --- "top N crypto" ---
         if (msg.contains("top") && msg.contains("crypto")) {
             List<AssetRecommendation> topCrypto = recommendationService.getTopNCrypto(n);
             if (topCrypto.isEmpty()) return "No crypto assets found in your portfolio.";
@@ -59,7 +60,6 @@ public class ChatService {
                     : fallbackResponse("CRYPTO", topCrypto);
         }
 
-        // --- "top N assets" (mixed) ---
         if (msg.contains("top")) {
             List<AssetRecommendation> topAssets = recommendationService.getTopNAssets(n);
             if (topAssets.isEmpty()) return "No assets found in your portfolio.";
@@ -76,7 +76,6 @@ public class ChatService {
         return getDefaultResponse(message);
     }
 
-    // 🔥 NEW: Stock Diversification Analysis (5-6 stocks)
     private String analyzeStockDiversification(List<UserAsset> stocks) {
         if (stocks.isEmpty()) return "🟡 **NO STOCKS**: Add stocks to analyze diversification.";
 
@@ -94,7 +93,6 @@ public class ChatService {
             return "🟢 **WELL DIVERSIFIED** (" + totalStocks + " stocks): Excellent spread across holdings.";
         }
 
-        // 5-6 stocks = GOOD diversification
         return "🟢 **GOOD DIVERSIFICATION** (" + totalStocks + " stocks): Balanced portfolio size.";
     }
 
@@ -160,6 +158,6 @@ public class ChatService {
     private String formatPercent(BigDecimal percent) {
         if (percent == null) return "0.0%";
         return (percent.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "") +
-                percent.setScale(1, BigDecimal.ROUND_HALF_UP) + "%";
+                percent.setScale(1, RoundingMode.HALF_UP) + "%";
     }
 }
